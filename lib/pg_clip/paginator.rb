@@ -16,11 +16,18 @@ module PgClip
     def execute_query(query)
       connection.execute <<-SQL
         SET intervalstyle = 'iso_8601';
-        WITH insight AS (#{query})
+        WITH insight AS (#{query}), stats AS (
+          SELECT
+           1        AS page,
+           COUNT(*) AS total_count,
+           1        AS total_pages
+          FROM insight
+        )
 
         SELECT
+          stats.*,
           row_to_json(insight) AS record
-        FROM insight
+        FROM insight, stats
       SQL
     end
 
